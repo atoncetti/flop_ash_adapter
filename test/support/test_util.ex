@@ -228,12 +228,22 @@ defmodule FlopAshAdapter.TestUtil do
     do: Map.delete(resource, :__metadata__)
 
   def insert_list_and_convert(count, factory, args \\ [])
-  def insert_list_and_convert(count, factory, args) when factory in [:pet, :pet_with_owner, :pet_downcase] do
+
+  def insert_list_and_convert(count, factory, args)
+      when factory in [:pet, :pet_with_owner, :pet_downcase] do
     count
     |> insert_list(factory, args)
 
     Pet
-    |> Ash.Query.load([:owner, :owner_name, :owner_age, :owner_tags, :full_name, :pet_and_owner_name, :reverse_name])
+    |> Ash.Query.load([
+      :owner,
+      :owner_name,
+      :owner_age,
+      :owner_tags,
+      :full_name,
+      :pet_and_owner_name,
+      :reverse_name
+    ])
     |> Thing.read!()
   end
 
@@ -251,6 +261,7 @@ defmodule FlopAshAdapter.TestUtil do
   field.
   """
   def insert_list_and_sort(count, factory, args \\ [])
+
   def insert_list_and_sort(count, :pet, args) do
     count
     |> insert_list_and_convert(:pet, args)
@@ -279,7 +290,14 @@ defmodule FlopAshAdapter.TestUtil do
   Query that returns all pets with owners joined and preloaded.
   """
   def pets_with_owners_query do
-    Ash.Query.load(Pet, [:owner, :owner_name, :owner_age, :owner_tags, :full_name, :pet_and_owner_name])
+    Ash.Query.load(Pet, [
+      :owner,
+      :owner_name,
+      :owner_age,
+      :owner_tags,
+      :full_name,
+      :pet_and_owner_name
+    ])
   end
 
   @doc """

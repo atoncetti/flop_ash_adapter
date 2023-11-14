@@ -5,20 +5,14 @@ defmodule MyApp.Thing.Vegetable do
   use Ash.Resource, data_layer: AshPostgres.DataLayer
 
   @derive {Flop.Schema,
-           filterable: [:name, :family, :with_bindings],
+           filterable: [:name, :family],
            sortable: [:name],
            default_limit: 60,
            default_order: %{
              order_by: [:name],
              order_directions: [:asc]
            },
-           pagination_types: [:page],
-           custom_fields: [
-             with_bindings: [
-               filter: {__MODULE__, :custom_filter, []},
-               bindings: [:curious]
-             ]
-           ]}
+           pagination_types: [:page]}
 
   postgres do
     table "vegetables"

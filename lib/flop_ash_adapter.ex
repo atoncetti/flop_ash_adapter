@@ -116,7 +116,7 @@ defmodule FlopAshAdapter do
   defp do_sort(query, directions) do
     Enum.reduce(directions, query, fn
       {path, direction}, acc_query when is_list(path) ->
-        sort(acc_query, Sort.expr_sort(^path))
+        sort(acc_query, Sort.expr_sort(^{path, direction}))
 
       {[field], direction}, acc_query ->
         sort(acc_query, {field, direction})
@@ -161,13 +161,13 @@ defmodule FlopAshAdapter do
   # type ascending, last cursor field
   defp cursor_filter([{direction, field, cursor_value, _}])
        when direction in [:asc, :asc_nulls_first, :asc_nulls_last] do
-        [{field, [gt: cursor_value]}]
+    [{field, [gt: cursor_value]}]
   end
 
   # type descending, last cursor field
   defp cursor_filter([{direction, field, cursor_value, _}])
        when direction in [:desc, :desc_nulls_first, :desc_nulls_last] do
-        [{field, [lt: cursor_value]}]
+    [{field, [lt: cursor_value]}]
   end
 
   # type ascending, more cursor fields to come
@@ -175,7 +175,12 @@ defmodule FlopAshAdapter do
          {direction, field, cursor_value, _} | [{_, _, _, _} | _] = tail
        ])
        when direction in [:asc, :asc_nulls_first, :asc_nulls_last] do
-    [and: [[{field, [gte: cursor_value]}], [or: [[{field, [gt: cursor_value]}], cursor_filter(tail)] ]]]
+    [
+      and: [
+        [{field, [gte: cursor_value]}],
+        [or: [[{field, [gt: cursor_value]}], cursor_filter(tail)]]
+      ]
+    ]
   end
 
   # type descending, more cursor fields to come
@@ -183,7 +188,12 @@ defmodule FlopAshAdapter do
          {direction, field, cursor_value, _} | [{_, _, _, _} | _] = tail
        ])
        when direction in [:desc, :desc_nulls_first, :desc_nulls_last] do
-    [and: [[{field, [lte: cursor_value]}], [or: [[{field, [lt: cursor_value]}], cursor_filter(tail)] ]]]
+    [
+      and: [
+        [{field, [lte: cursor_value]}],
+        [or: [[{field, [lt: cursor_value]}], cursor_filter(tail)]]
+      ]
+    ]
   end
 
   @impl Flop.Adapter
@@ -193,7 +203,7 @@ defmodule FlopAshAdapter do
 
   @impl Flop.Adapter
   def list(query, opts) do
-    apply_using_api(:read!, [query|>dbg], opts)
+    apply_using_api(:read!, [query], opts)
   end
 
   defp apply_using_api(api_fn, args, opts) do
@@ -205,8 +215,7 @@ defmodule FlopAshAdapter do
   end
 
   @impl Flop.Adapter
-  def get_field(%{} = _item, _field, %FieldInfo{} = field_info) do
-  end
+  def get_field(%{} = item, field, %FieldInfo{}), do: Map.get(item, field)
 
   defp get_field_info(nil, field),
     do: %FieldInfo{extra: %{type: :normal, field: field}}
@@ -278,25 +287,7 @@ defmodule FlopAshAdapter do
   defp array_or_map({:parameterized, Ash.Type.Map.EctoType, _}), do: :map
   defp array_or_map(_), do: :other
 
-  # for op <- [:ilike, :like] do
-  #   defp build_op(
-  #          _schema_struct,
-  #          %FieldInfo{extra: %{type: :normal, field: field}},
-  #          %Filter{op: unquote(op), value: value}
-  #        ) do
-  #         op_config(unquote(op))
-  #   end
-  # end
-
-    defp build_op(
-           _schema_struct,
-           %FieldInfo{extra: %{type: :normal, field: field}},
-           %Filter{op: :like, value: value}
-         ) do
-          Ash.Query.expr(like(owner_name, quote do: var!(valued)))
-    end
-
-  for op <- @operators -- [:like_and, :like_or, :ilike_and, :ilike_or, :like] do
+  for op <- @operators -- [:like_and, :like_or, :ilike_and, :ilike_or] do
     fragment = op_config(op)
 
     defp build_op(
@@ -307,4 +298,7 @@ defmodule FlopAshAdapter do
       unquote(fragment)
     end
   end
+
+  @impl Flop.Adapter
+  def custom_func_builder(_opts), do: []
 end
