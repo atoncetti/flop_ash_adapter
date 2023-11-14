@@ -11,13 +11,10 @@ Currently missing:
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `flop_ash_adapter` to your list of dependencies in `mix.exs`:
-
 ```elixir
 def deps do
   [
-    {:flop_ash_adapter, git: "https://github.com/atoncetti/flop_ash_adapter.git", branch: "main"},
+    {:flop_ash_adapter, git: "https://github.com/atoncetti/flop_ash_adapter.git", branch: "main"}
   ]
 end
 ```
