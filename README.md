@@ -1,6 +1,13 @@
 # FlopAshAdapter
 
-**TODO: Add description**
+A Flop adapter for Ash.
+
+Currently missing:
+- empty and not_empty operations on calculations of type array
+- like, ilike and combinations {or_, and_}-{like, ilike}
+- in and not_in operator
+- contains and not_contains operator
+- query prefix functionality
 
 ## Installation
 
@@ -10,12 +17,8 @@ by adding `flop_ash_adapter` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:flop_ash_adapter, "~> 0.1.0"}
+    {:flop_ash_adapter, git: "https://github.com/atoncetti/flop_ash_adapter.git", branch: "main"},
   ]
 end
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/flop_ash_adapter>.
 
